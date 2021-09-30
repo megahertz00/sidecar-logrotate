@@ -1,0 +1,29 @@
+version: '3'
+services:
+    nginx:
+        # используем последний стабильный образ nginx
+        image: nginx:latest
+        # маршрутизируем порты
+        ports:
+            - "80:80"
+        volumes:
+            - ./conf:/etc/nginx/conf.d/
+            - ./www/:/var/www/
+            - ./logs/nginx/:/var/log/nginx/:Z
+
+    logrotate:
+        image: blacklabelops/logrotate
+        volumes:
+            - ./logs/logrotate/:/logs/
+            - ./var/logrotate/:/logrotate-status/
+            - ./logs/nginx/:/var/log/nginx/:Z
+        environment:
+            - "LOGS_DIRECTORIES=/var/log/nginx" #новые добавляем через пробел
+            #- "LOGROTATE_INTERVAL=hourly"
+            - "LOGROTATE_CRONSCHEDULE=0 */1 * * *"
+            - "TZ=Etc/UTC"
+            - "LOGROTATE_STATUSFILE=/logrotate-status/logrotate.status"
+            - "LOGROTATE_LOGFILE=/logs/logrotate.log"
+            - "LOGROTATE_PARAMETERS=v"
+            - "LOGROTATE_COMPRESSION=compress"
+            - "LOGROTATE_COPIES=5"
